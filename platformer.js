@@ -37,7 +37,7 @@ function setup() {
     groundSprites.add(gs)
   }
 
-  player = createSprite(100, height-75, 50, 50)
+  player = createSprite(100, height-75, 25, 25)//50, 50)
 }
 
 function mouseClicked() {
@@ -53,7 +53,9 @@ function mouseClicked() {
     obstacleSprites.removeSprites()
     isGameOver = false
     score = 0
-  } 
+  } else {
+    player.velocity.y = JUMP
+  }
 }
 
 function draw() {
