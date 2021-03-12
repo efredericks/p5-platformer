@@ -2,6 +2,7 @@
 //avoid blackboard icons, github icons
 //points for gvsu logos
 
+// https://www.deviantart.com/turboignited/art/Stickman-Spritesheet-691692371
 // https://opengameart.org/content/man-walking-animation
 // https://opengameart.org/content/animated-character
 // https://leftshoe18.itch.io/animated-stick-figure-unity
