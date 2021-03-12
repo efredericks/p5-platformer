@@ -1,3 +1,11 @@
+//pick your prof title screen
+//avoid blackboard icons, github icons
+//points for gvsu logos
+
+// https://opengameart.org/content/man-walking-animation
+// https://opengameart.org/content/animated-character
+// https://leftshoe18.itch.io/animated-stick-figure-unity
+
 //based on https://workshops.hackclub.com/platformer/
 var groundSprites
 var GROUND_SPRITE_WIDTH  = 50
@@ -20,7 +28,7 @@ function setup() {
   isGameOver = false
   score      = 0
 
-  createCanvas(400, 300)
+  createCanvas(800,600)//400, 300)
   background(150, 200, 250)
 
   groundSprites    = new Group()
