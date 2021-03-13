@@ -7,12 +7,16 @@
 // https://opengameart.org/content/animated-character
 // https://leftshoe18.itch.io/animated-stick-figure-unity
 
+//stickman: https://www.deviantart.com/turboignited/art/Stickman-Spritesheet-691692371
+
 //based on https://workshops.hackclub.com/platformer/
 var groundSprites
 var GROUND_SPRITE_WIDTH  = 50
 var GROUND_SPRITE_HEIGHT = 50
 var numGroundSprites
 var obstacleSprites
+var coinSprites
+var coinImg
 
 var GRAVITY = 0.3
 var JUMP    = -5
@@ -25,15 +29,23 @@ function endGame() {
   isGameOver = true
 }
 
+function addCoin(c, p) {
+  score += 100
+  c.remove()
+}
+
 function setup() {
   isGameOver = false
   score      = 0
+
+  coinImg = loadImage("sprites/gvsu-logo-1.png")
 
   createCanvas(800,600)//400, 300)
   background(150, 200, 250)
 
   groundSprites    = new Group()
   obstacleSprites  = new Group()
+  coinSprites      = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
@@ -46,9 +58,10 @@ function setup() {
     groundSprites.add(gs)
   }
 
-  player = createSprite(100, height-75, 128, 128)//25, 25)//50, 50)
-  player.addAnimation('walking', 'sprites/walk/1.png', 'sprites/walk/20.png')
-  player.changeAnimation('walking')
+  player = createSprite(100, height-75, 25, 25)//50, 50)
+  //player = createSprite(100, height-75, 128, 128)//25, 25)//50, 50)
+  //player.addAnimation('walking', 'sprites/walk/1.png', 'sprites/walk/20.png')
+  //player.changeAnimation('walking')
 }
 
 function mouseClicked() {
@@ -61,7 +74,9 @@ function mouseClicked() {
     player.position.y = height - 50 - player.height / 2
     player.velocity.y = 0
 
+    coinSprites.removeSprites()
     obstacleSprites.removeSprites()
+
     isGameOver = false
     score = 0
   } else {
@@ -118,7 +133,25 @@ function draw() {
     }
 
     // collide
-    //obstacleSprites.overlap(player, endGame)
+    obstacleSprites.overlap(player, endGame)
+
+
+    //// coins
+    if (random() > 0.95) {
+      var coin = createSprite(camera.position.x + width, 
+                              random(0, height - 50 - 15), 
+                              30, 30)
+      coin.addImage(coinImg)
+      coinSprites.add(coin)
+    }
+    // remove if necessary
+    var firstCoin = coinSprites[0]
+    if ((coinSprites.length > 0) && (firstCoin.position.x <= camera.position.x - (width / 2 + firstCoin.width / 2))) {
+      removeSprite(firstCoin)
+    }
+    // collide
+    coinSprites.overlap(player, addCoin)
+
     
     drawSprites()
 
