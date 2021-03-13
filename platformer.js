@@ -46,7 +46,9 @@ function setup() {
     groundSprites.add(gs)
   }
 
-  player = createSprite(100, height-75, 25, 25)//50, 50)
+  player = createSprite(100, height-75, 128, 128)//25, 25)//50, 50)
+  player.addAnimation('walking', 'sprites/walk/1.png', 'sprites/walk/20.png')
+  player.changeAnimation('walking')
 }
 
 function mouseClicked() {
@@ -116,7 +118,7 @@ function draw() {
     }
 
     // collide
-    obstacleSprites.overlap(player, endGame)
+    //obstacleSprites.overlap(player, endGame)
     
     drawSprites()
 
