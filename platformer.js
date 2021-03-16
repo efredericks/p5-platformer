@@ -10,6 +10,9 @@
 //stickman: https://www.deviantart.com/turboignited/art/Stickman-Spritesheet-691692371
 
 // https://www.kenney.nl/assets/simplified-platformer-pack
+// solarize --> brightness:60 --> duplicate/add noise/75% opacity on top
+
+
 
 //based on https://workshops.hackclub.com/platformer/
 var groundSprites
@@ -54,7 +57,7 @@ function addCoin(c, p) {
 
 function addPowerup(c, p) {
   powerupTimer = 100
-  player.height = 50//scale = 2.0
+  player.changeAnimation('powerup')
   c.remove()
 }
 
@@ -64,8 +67,10 @@ function setup() {
   score        = 0
   systems      = []
 
+  let kenneyPath = "sprites/kenney/PNG/"
+
   coinImg      = loadImage("sprites/gvsu-logo-1.png")
-  powerupImg   = loadImage("sprites/kenney/PNG/Tiles/platformPack_tile023.png")
+  powerupImg   = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
 
   createCanvas(800,600)//400, 300)
   background(150, 200, 250)
@@ -86,10 +91,16 @@ function setup() {
     groundSprites.add(gs)
   }
 
-  player = createSprite(100, height-75, 25, 25)//50, 50)
-  //player = createSprite(100, height-75, 128, 128)//25, 25)//50, 50)
-  //player.addAnimation('walking', 'sprites/walk/1.png', 'sprites/walk/20.png')
-  //player.changeAnimation('walking')
+  //player = createSprite(100, height-75, 25, 25)//50, 50)
+  player = createSprite(100, height-75, 96, 96)//128, 128)//25, 25)//50, 50)
+  playerAnim = player.addAnimation('walking', kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
+  playerAnim.frameDelay = 12
+
+  powerupAnim = player.addAnimation('powerup', kenneyPath + "Characters/platformChar_walk1-power.png", kenneyPath + "Characters/platformChar_walk2-power.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
+  powerupAnim.frameDelay = 12
+
+  player.changeAnimation('walking')
+  player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
 }
 
 function mouseClicked() {
@@ -105,7 +116,6 @@ function mouseClicked() {
     coinSprites.removeSprites()
     obstacleSprites.removeSprites()
     powerupSprites.removeSprites()
-
 
     systems = []
 
@@ -128,6 +138,7 @@ function draw() {
 
     player.velocity.y = player.velocity.y + GRAVITY
 
+
     // collision
     if (groundSprites.overlap(player)) {
         player.velocity.y = 0
@@ -137,6 +148,13 @@ function draw() {
     // handle input
     if (keyDown(UP_ARROW)) {
         player.velocity.y = JUMP
+        //console.log('wtf')
+    }
+
+    // DEBUG
+    if (keyDown('a')) {
+      powerupTimer = 200
+      player.changeAnimation('powerup')
     }
 
 
@@ -224,7 +242,7 @@ function draw() {
     if (powerupTimer > 0) {
       powerupTimer--
       if (powerupTimer == 0)
-        player.height = player.originalHeight//scale = 1.0
+        player.changeAnimation('walking')
     }
   }
 }
