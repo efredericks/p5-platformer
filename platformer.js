@@ -9,6 +9,8 @@
 
 //stickman: https://www.deviantart.com/turboignited/art/Stickman-Spritesheet-691692371
 
+// https://www.kenney.nl/assets/simplified-platformer-pack
+
 //based on https://workshops.hackclub.com/platformer/
 var groundSprites
 var GROUND_SPRITE_WIDTH  = 50
@@ -18,11 +20,15 @@ var obstacleSprites
 var coinSprites
 var coinImg
 
+var powerupSprites
+var powerupImg
+
 var GRAVITY = 0.3
 var JUMP    = -5
 
 var player
 var isGameOver
+var powerupTimer
 var score
 
 let systems
@@ -30,8 +36,12 @@ let systems
 //// particle stuff
 ////
 
-function endGame() {
-  isGameOver = true
+function collideEntity(e, p) {
+  if (powerupTimer > 0) {
+    score += 200
+    e.remove()
+  } else
+    isGameOver = true
 }
 
 function addCoin(c, p) {
@@ -42,12 +52,20 @@ function addCoin(c, p) {
   c.remove()
 }
 
-function setup() {
-  isGameOver = false
-  score      = 0
-  systems    = []
+function addPowerup(c, p) {
+  powerupTimer = 100
+  player.height = 50//scale = 2.0
+  c.remove()
+}
 
-  coinImg = loadImage("sprites/gvsu-logo-1.png")
+function setup() {
+  isGameOver   = false
+  powerupTimer = 0
+  score        = 0
+  systems      = []
+
+  coinImg      = loadImage("sprites/gvsu-logo-1.png")
+  powerupImg   = loadImage("sprites/kenney/PNG/Tiles/platformPack_tile023.png")
 
   createCanvas(800,600)//400, 300)
   background(150, 200, 250)
@@ -55,6 +73,7 @@ function setup() {
   groundSprites    = new Group()
   obstacleSprites  = new Group()
   coinSprites      = new Group()
+  powerupSprites   = new Group
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
@@ -85,6 +104,9 @@ function mouseClicked() {
 
     coinSprites.removeSprites()
     obstacleSprites.removeSprites()
+    powerupSprites.removeSprites()
+
+
     systems = []
 
     isGameOver = false
@@ -143,7 +165,7 @@ function draw() {
     }
 
     // collide
-    obstacleSprites.overlap(player, endGame)
+    obstacleSprites.overlap(player, collideEntity)
 
 
     //// coins
@@ -162,6 +184,26 @@ function draw() {
     // collide
     coinSprites.overlap(player, addCoin)
 
+
+    //// powerups
+    if (random() > 0.99) {
+      var powerup = createSprite(camera.position.x + width, 
+                              random(0, height - 50 - 15), 
+                              30, 30)
+      powerup.addImage(powerupImg)
+      powerupSprites.add(powerup)
+    }
+    // remove if necessary
+    var firstPowerup = powerupSprites[0]
+    if ((powerupSprites.length > 0) && (firstPowerup.position.x <= camera.position.x - (width / 2 + firstPowerup.width / 2))) {
+      removeSprite(firstPowerup)
+    }
+    // collide
+    powerupSprites.overlap(player, addPowerup)
+
+
+
+
     for (i = 0; i < systems.length; i++) {
       systems[i].run();
       systems[i].addParticle();
@@ -173,9 +215,17 @@ function draw() {
 
     drawSprites()
 
+    // score
     score = score + 1
     textAlign(CENTER)
     text(score, camera.position.x, 10)
+
+    // powerup
+    if (powerupTimer > 0) {
+      powerupTimer--
+      if (powerupTimer == 0)
+        player.height = player.originalHeight//scale = 1.0
+    }
   }
 }
 
