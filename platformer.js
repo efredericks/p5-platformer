@@ -16,7 +16,7 @@
 
 //based on https://workshops.hackclub.com/platformer/
 var groundSprites
-var GROUND_SPRITE_WIDTH  = 50
+var GROUND_SPRITE_WIDTH = 50
 var GROUND_SPRITE_HEIGHT = 50
 var numGroundSprites
 var obstacleSprites
@@ -27,7 +27,7 @@ var powerupSprites
 var powerupImg
 
 var GRAVITY = 0.3
-var JUMP    = -5
+var JUMP = -5
 
 var player
 var isGameOver
@@ -62,23 +62,23 @@ function addPowerup(c, p) {
 }
 
 function setup() {
-  isGameOver   = false
+  isGameOver = false
   powerupTimer = 0
-  score        = 0
-  systems      = []
+  score = 0
+  systems = []
 
   let kenneyPath = "sprites/kenney/PNG/"
 
-  coinImg      = loadImage("sprites/gvsu-logo-1.png")
-  powerupImg   = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
+  coinImg = loadImage("sprites/gvsu-logo-1.png")
+  powerupImg = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
 
-  createCanvas(800,600)//400, 300)
+  createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites    = new Group()
-  obstacleSprites  = new Group()
-  coinSprites      = new Group()
-  powerupSprites   = new Group
+  groundSprites = new Group()
+  obstacleSprites = new Group()
+  coinSprites = new Group()
+  powerupSprites = new Group
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
@@ -92,7 +92,7 @@ function setup() {
   }
 
   //player = createSprite(100, height-75, 25, 25)//50, 50)
-  player = createSprite(100, height-75, 96, 96)//128, 128)//25, 25)//50, 50)
+  player = createSprite(100, height - 75, 96, 96)//128, 128)//25, 25)//50, 50)
   playerAnim = player.addAnimation('walking', kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
   playerAnim.frameDelay = 12
 
@@ -103,25 +103,29 @@ function setup() {
   player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
 }
 
+function resetGame() {
+  for (var n = 0; n < numGroundSprites; n++) {
+    var gndSprite = groundSprites[n]
+    gndSprite.position.x = n * 50
+  }
+  player.position.x = 100
+  player.position.y = height - 50 - player.height / 2
+  player.velocity.y = 0
+
+  coinSprites.removeSprites()
+  obstacleSprites.removeSprites()
+  powerupSprites.removeSprites()
+
+  systems = []
+
+  isGameOver = false
+  score = 0
+}
+
 function mouseClicked() {
-  if (isGameOver) {
-    for (var n = 0; n < numGroundSprites; n++) {
-      var gndSprite = groundSprites[n]
-      gndSprite.position.x = n * 50
-    }
-    player.position.x = 100
-    player.position.y = height - 50 - player.height / 2
-    player.velocity.y = 0
-
-    coinSprites.removeSprites()
-    obstacleSprites.removeSprites()
-    powerupSprites.removeSprites()
-
-    systems = []
-
-    isGameOver = false
-    score = 0
-  } else {
+  if (isGameOver) 
+    resetGame()
+  else {
     player.velocity.y = JUMP
   }
 }
@@ -132,7 +136,11 @@ function draw() {
     fill(255)
     textAlign(CENTER)
     text('Final score: ' + score, camera.position.x, camera.position.y - 20)
-    text('Game over! Click to restart', camera.position.x, camera.position.y)
+    text('Game over! Click or press any key to restart', camera.position.x, camera.position.y)
+
+    if (keyIsPressed === true) 
+      resetGame()
+
   } else {
     background(150, 200, 250)
 
@@ -141,14 +149,15 @@ function draw() {
 
     // collision
     if (groundSprites.overlap(player)) {
-        player.velocity.y = 0
-        player.position.y = height - 50 - player.height / 2
+      player.velocity.y = 0
+      player.position.y = height - 50 - player.height / 2
     }
+
 
     // handle input
     if (keyDown(UP_ARROW)) {
-        player.velocity.y = JUMP
-        //console.log('wtf')
+      player.velocity.y = JUMP
+      //console.log('wtf')
     }
 
     // DEBUG
@@ -170,9 +179,9 @@ function draw() {
 
     // spawn obstacles randomly
     if (random() > 0.95) {
-      var obstacle = createSprite(camera.position.x + width, 
-                                  random(0, height - 50 - 15), 
-                                  30, 30)
+      var obstacle = createSprite(camera.position.x + width,
+        random(0, height - 50 - 15),
+        30, 30)
       obstacleSprites.add(obstacle)
     }
 
@@ -188,9 +197,9 @@ function draw() {
 
     //// coins
     if (random() > 0.95) {
-      var coin = createSprite(camera.position.x + width, 
-                              random(0, height - 50 - 15), 
-                              30, 30)
+      var coin = createSprite(camera.position.x + width,
+        random(0, height - 50 - 15),
+        30, 30)
       coin.addImage(coinImg)
       coinSprites.add(coin)
     }
@@ -205,11 +214,13 @@ function draw() {
 
     //// powerups
     if (random() > 0.99) {
-      var powerup = createSprite(camera.position.x + width, 
-                              random(0, height - 50 - 15), 
-                              30, 30)
+      var powerup = createSprite(camera.position.x + width,
+        random(0, height - 50 - 15),
+        30, 30)
       powerup.addImage(powerupImg)
+      powerup.scale = 0.75
       powerupSprites.add(powerup)
+
     }
     // remove if necessary
     var firstPowerup = powerupSprites[0]
@@ -249,20 +260,20 @@ function draw() {
 
 
 // A simple Particle class
-let Particle = function(position) {
+let Particle = function (position) {
   this.acceleration = createVector(0, 0.05);
   this.velocity = createVector(random(-1, 1), random(-1, 0));
   this.position = position.copy();
   this.lifespan = 255.0;
 };
 
-Particle.prototype.run = function() {
+Particle.prototype.run = function () {
   this.update();
   this.display();
 };
 
 // Method to update position
-Particle.prototype.update = function(){
+Particle.prototype.update = function () {
   this.velocity.add(this.acceleration);
   this.position.add(this.velocity);
   this.lifespan -= 2;
@@ -336,14 +347,14 @@ CrazyParticle.prototype.constructor = CrazyParticle;
 // Notice we don't have the method run() here; it is inherited from Particle
 
 // This update() method overrides the parent class update() method
-CrazyParticle.prototype.update=function() {
+CrazyParticle.prototype.update = function () {
   Particle.prototype.update.call(this);
   // Increment rotation based on horizontal velocity
   this.theta += (this.velocity.x * this.velocity.mag()) / 10.0;
 }
 
 // This display() method overrides the parent class display() method
-CrazyParticle.prototype.display=function() {
+CrazyParticle.prototype.display = function () {
   // Render the ellipse just like in a regular particle
   Particle.prototype.display.call(this);
   // Then add a rotating line
