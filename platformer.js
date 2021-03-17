@@ -36,6 +36,9 @@ var isPaused
 var powerupTimer
 var score
 
+var lastKeyPressTimer
+var lastKeyPressDelay = 10 // don't auto-trigger pause on fresh start
+
 let systems
 
 //// particle stuff
@@ -45,8 +48,10 @@ function collideEntity(e, p) {
   if (powerupTimer > 0) {
     score += 200
     e.remove()
-  } else
+  } else {
     isGameOver = true
+    lastKeyPressTimer = lastKeyPressDelay * 4
+  }
 }
 
 function addCoin(c, p) {
@@ -67,6 +72,7 @@ function setup() {
   isGameOver = false
   isPaused = false
   powerupTimer = 0
+  lastKeyPressTimer = 0
   score = 0
   systems = []
 
@@ -130,6 +136,7 @@ function resetGame() {
   isPaused = false
   isGameOver = false
   score = 0
+  lastKeyPressTimer = lastKeyPressDelay
 }
 
 function mouseClicked() {
@@ -141,6 +148,9 @@ function mouseClicked() {
 }
 
 function draw() {
+  if (lastKeyPressTimer > 0)
+    lastKeyPressTimer--
+
   if (isGameOver) {
     background(0)
     fill(255)
@@ -148,8 +158,9 @@ function draw() {
     text('Final score: ' + score, camera.position.x, camera.position.y - 20)
     text('Game over! Click or press any key to restart', camera.position.x, camera.position.y)
 
-    if (keyIsPressed === true)
+    if ((keyIsPressed === true) && (lastKeyPressTimer == 0)) {
       resetGame()
+    }
 
   } else {
     background(150, 200, 250)
@@ -277,8 +288,9 @@ function draw() {
 }
 
 function keyReleased() {
-  if ((keyCode == 80) && (!isGameOver)) { // pause
+  if ((keyCode == 80) && (!isGameOver) && (lastKeyPressTimer == 0)) { // pause
     isPaused = !isPaused
+    lastKeyPressTimer = lastKeyPressDelay
   }
 }
 
