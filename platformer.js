@@ -15,6 +15,7 @@
 
 
 //based on https://workshops.hackclub.com/platformer/
+var uiSprites
 var groundSprites
 var GROUND_SPRITE_WIDTH = 50
 var GROUND_SPRITE_HEIGHT = 50
@@ -75,10 +76,11 @@ function setup() {
   createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites = new Group()
-  obstacleSprites = new Group()
-  coinSprites = new Group()
-  powerupSprites = new Group
+  groundSprites    = new Group()
+  obstacleSprites  = new Group()
+  coinSprites      = new Group()
+  powerupSprites   = new Group()
+  uiSprites        = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
@@ -91,6 +93,7 @@ function setup() {
     groundSprites.add(gs)
   }
 
+  /// Player sprites
   //player = createSprite(100, height-75, 25, 25)//50, 50)
   player = createSprite(100, height - 75, 96, 96)//128, 128)//25, 25)//50, 50)
   playerAnim = player.addAnimation('walking', kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
@@ -101,6 +104,10 @@ function setup() {
 
   player.changeAnimation('walking')
   player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
+
+  /// UI sprites
+  ui = createSprite(0,0,width,40)
+  uiSprites.add(ui)
 }
 
 function resetGame() {
@@ -153,6 +160,10 @@ function draw() {
       player.position.y = height - 50 - player.height / 2
     }
 
+    if (uiSprites.overlap(player)) {
+      player.position.y = height - 50 - player.height / 2
+    }
+
 
     // handle input
     if (keyDown(UP_ARROW)) {
@@ -166,6 +177,8 @@ function draw() {
       player.changeAnimation('powerup')
     }
 
+    fill(128)
+    ui.position.x = camera.position.x
 
     player.position.x = player.position.x + 5
     camera.position.x = player.position.x + width / 4
