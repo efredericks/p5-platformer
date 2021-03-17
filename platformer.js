@@ -32,6 +32,7 @@ var JUMP = -5
 
 var player
 var isGameOver
+var isPaused
 var powerupTimer
 var score
 
@@ -64,6 +65,7 @@ function addPowerup(c, p) {
 
 function setup() {
   isGameOver = false
+  isPaused = false
   powerupTimer = 0
   score = 0
   systems = []
@@ -76,11 +78,11 @@ function setup() {
   createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites    = new Group()
-  obstacleSprites  = new Group()
-  coinSprites      = new Group()
-  powerupSprites   = new Group()
-  uiSprites        = new Group()
+  groundSprites = new Group()
+  obstacleSprites = new Group()
+  coinSprites = new Group()
+  powerupSprites = new Group()
+  uiSprites = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
@@ -106,7 +108,7 @@ function setup() {
   player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
 
   /// UI sprites
-  ui = createSprite(0,0,width,40)
+  ui = createSprite(0, 0, width, 40)
   uiSprites.add(ui)
 }
 
@@ -125,12 +127,13 @@ function resetGame() {
 
   systems = []
 
+  isPaused = false
   isGameOver = false
   score = 0
 }
 
 function mouseClicked() {
-  if (isGameOver) 
+  if (isGameOver)
     resetGame()
   else {
     player.velocity.y = JUMP
@@ -145,129 +148,137 @@ function draw() {
     text('Final score: ' + score, camera.position.x, camera.position.y - 20)
     text('Game over! Click or press any key to restart', camera.position.x, camera.position.y)
 
-    if (keyIsPressed === true) 
+    if (keyIsPressed === true)
       resetGame()
 
   } else {
     background(150, 200, 250)
 
-    player.velocity.y = player.velocity.y + GRAVITY
+    if (!isPaused) {
+      player.velocity.y = player.velocity.y + GRAVITY
 
-
-    // collision
-    if (groundSprites.overlap(player)) {
-      player.velocity.y = 0
-      player.position.y = height - 50 - player.height / 2
-    }
-
-    if (uiSprites.overlap(player)) {
-      player.position.y = height - 50 - player.height / 2
-    }
-
-
-    // handle input
-    if (keyDown(UP_ARROW)) {
-      player.velocity.y = JUMP
-      //console.log('wtf')
-    }
-
-    // DEBUG
-    if (keyDown('a')) {
-      powerupTimer = 200
-      player.changeAnimation('powerup')
-    }
-
-    fill(128)
-    ui.position.x = camera.position.x
-
-    player.position.x = player.position.x + 5
-    camera.position.x = player.position.x + width / 4
-
-    var firstGroundSprite = groundSprites[0]
-    if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
-      groundSprites.remove(firstGroundSprite)
-      firstGroundSprite.position.x = firstGroundSprite.position.x + numGroundSprites * firstGroundSprite.width
-      groundSprites.add(firstGroundSprite)
-    }
-
-    // spawn obstacles randomly
-    if (random() > 0.95) {
-      var obstacle = createSprite(camera.position.x + width,
-        random(0, height - 50 - 15),
-        30, 30)
-      obstacleSprites.add(obstacle)
-    }
-
-    // remove if necessary
-    var firstObstacle = obstacleSprites[0]
-    if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
-      removeSprite(firstObstacle)
-    }
-
-    // collide
-    obstacleSprites.overlap(player, collideEntity)
-
-
-    //// coins
-    if (random() > 0.95) {
-      var coin = createSprite(camera.position.x + width,
-        random(0, height - 50 - 15),
-        30, 30)
-      coin.addImage(coinImg)
-      coinSprites.add(coin)
-    }
-    // remove if necessary
-    var firstCoin = coinSprites[0]
-    if ((coinSprites.length > 0) && (firstCoin.position.x <= camera.position.x - (width / 2 + firstCoin.width / 2))) {
-      removeSprite(firstCoin)
-    }
-    // collide
-    coinSprites.overlap(player, addCoin)
-
-
-    //// powerups
-    if (random() > 0.99) {
-      var powerup = createSprite(camera.position.x + width,
-        random(0, height - 50 - 15),
-        30, 30)
-      powerup.addImage(powerupImg)
-      powerup.scale = 0.75
-      powerupSprites.add(powerup)
-
-    }
-    // remove if necessary
-    var firstPowerup = powerupSprites[0]
-    if ((powerupSprites.length > 0) && (firstPowerup.position.x <= camera.position.x - (width / 2 + firstPowerup.width / 2))) {
-      removeSprite(firstPowerup)
-    }
-    // collide
-    powerupSprites.overlap(player, addPowerup)
-
-
-
-
-    for (i = 0; i < systems.length; i++) {
-      systems[i].run();
-      systems[i].addParticle();
-
-      if (systems[i].particles.length > 10) {
-        systems.splice(i, 1);
+      // collision
+      if (groundSprites.overlap(player)) {
+        player.velocity.y = 0
+        player.position.y = height - 50 - player.height / 2
       }
+
+      if (uiSprites.overlap(player)) {
+        player.position.y = height - 50 - player.height / 2
+      }
+
+      // handle input
+      if (keyDown(UP_ARROW)) {
+        player.velocity.y = JUMP
+        //console.log('wtf')
+      }
+
+      // DEBUG
+      if (keyDown('a')) {
+        powerupTimer = 200
+        player.changeAnimation('powerup')
+      }
+
+      fill(128)
+      ui.position.x = camera.position.x
+
+      player.position.x = player.position.x + 5
+      camera.position.x = player.position.x + width / 4
+
+      var firstGroundSprite = groundSprites[0]
+      if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
+        groundSprites.remove(firstGroundSprite)
+        firstGroundSprite.position.x = firstGroundSprite.position.x + numGroundSprites * firstGroundSprite.width
+        groundSprites.add(firstGroundSprite)
+      }
+
+      // spawn obstacles randomly
+      if (random() > 0.95) {
+        var obstacle = createSprite(camera.position.x + width,
+          random(0, height - 50 - 15),
+          30, 30)
+        obstacleSprites.add(obstacle)
+      }
+
+      // remove if necessary
+      var firstObstacle = obstacleSprites[0]
+      if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
+        removeSprite(firstObstacle)
+      }
+
+      // collide
+      obstacleSprites.overlap(player, collideEntity)
+
+
+      //// coins
+      if (random() > 0.95) {
+        var coin = createSprite(camera.position.x + width,
+          random(0, height - 50 - 15),
+          30, 30)
+        coin.addImage(coinImg)
+        coinSprites.add(coin)
+      }
+      // remove if necessary
+      var firstCoin = coinSprites[0]
+      if ((coinSprites.length > 0) && (firstCoin.position.x <= camera.position.x - (width / 2 + firstCoin.width / 2))) {
+        removeSprite(firstCoin)
+      }
+      // collide
+      coinSprites.overlap(player, addCoin)
+
+
+      //// powerups
+      if (random() > 0.99) {
+        var powerup = createSprite(camera.position.x + width,
+          random(0, height - 50 - 15),
+          30, 30)
+        powerup.addImage(powerupImg)
+        powerup.scale = 0.75
+        powerupSprites.add(powerup)
+
+      }
+      // remove if necessary
+      var firstPowerup = powerupSprites[0]
+      if ((powerupSprites.length > 0) && (firstPowerup.position.x <= camera.position.x - (width / 2 + firstPowerup.width / 2))) {
+        removeSprite(firstPowerup)
+      }
+      // collide
+      powerupSprites.overlap(player, addPowerup)
+
+
+
+
+      for (i = 0; i < systems.length; i++) {
+        systems[i].run();
+        systems[i].addParticle();
+
+        if (systems[i].particles.length > 10) {
+          systems.splice(i, 1);
+        }
+      }
+
+      drawSprites()
+
+      // score
+      score = score + 1
+      textAlign(CENTER)
+      text(score, camera.position.x, 10)
+
+      // powerup
+      if (powerupTimer > 0) {
+        powerupTimer--
+        if (powerupTimer == 0)
+          player.changeAnimation('walking')
+      }
+    } else {
+      console.log("paused")
     }
+  }
+}
 
-    drawSprites()
-
-    // score
-    score = score + 1
-    textAlign(CENTER)
-    text(score, camera.position.x, 10)
-
-    // powerup
-    if (powerupTimer > 0) {
-      powerupTimer--
-      if (powerupTimer == 0)
-        player.changeAnimation('walking')
-    }
+function keyReleased() {
+  if ((keyCode == 80) && (!isGameOver)) { // pause
+    isPaused = !isPaused
   }
 }
 
