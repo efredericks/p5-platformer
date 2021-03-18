@@ -39,6 +39,8 @@ var score
 var lastKeyPressTimer
 var lastKeyPressDelay = 10 // don't auto-trigger pause on fresh start
 
+var scenes = []
+
 let systems
 
 //// particle stuff
@@ -116,6 +118,11 @@ function setup() {
   /// UI sprites
   ui = createSprite(0, 0, width, 40)
   uiSprites.add(ui)
+
+  // setup scenes
+  // main menu
+  // discussion
+  // gameplay?
 }
 
 function resetGame() {
@@ -282,7 +289,10 @@ function draw() {
           player.changeAnimation('walking')
       }
     } else {
-      console.log("paused")
+      fill('rgba(0,255,0,0.25)')
+      rect(0,25,width,height-25)
+      
+    //  console.log("paused")
     }
   }
 }
