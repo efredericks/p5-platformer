@@ -17,15 +17,18 @@
 //based on https://workshops.hackclub.com/platformer/
 var uiSprites
 var groundSprites
-var GROUND_SPRITE_WIDTH = 50
-var GROUND_SPRITE_HEIGHT = 50
+var GROUND_SPRITE_WIDTH = 64//50
+var GROUND_SPRITE_HEIGHT = 64//50
 var numGroundSprites
 var obstacleSprites
 var coinSprites
+
 var coinImg
+var groundImg
+var powerupImg
+var foliageImg
 
 var powerupSprites
-var powerupImg
 
 var GRAVITY = 0.3
 var JUMP = -5
@@ -79,27 +82,30 @@ function setup() {
   systems = []
 
   let kenneyPath = "sprites/kenney/PNG/"
-
-  coinImg = loadImage("sprites/gvsu-logo-1.png")
-  powerupImg = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
+  coinImg        = loadImage("sprites/gvsu-logo-1.png")
+  powerupImg     = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
+  groundImg      = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
+  foliageImg     = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
 
   createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites = new Group()
-  obstacleSprites = new Group()
-  coinSprites = new Group()
-  powerupSprites = new Group()
-  uiSprites = new Group()
+  groundSprites    = new Group()
+  obstacleSprites  = new Group()
+  coinSprites      = new Group()
+  powerupSprites   = new Group()
+  uiSprites        = new Group()
+  foliageSprites   = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   for (let n = 0; n < numGroundSprites; n++) {
     let gs = createSprite(
-      n * 50,
+      n * 64,//50,
       height - 25,
       GROUND_SPRITE_WIDTH,
       GROUND_SPRITE_HEIGHT
     )
+    gs.addImage(groundImg)
     groundSprites.add(gs)
   }
 
@@ -128,10 +134,11 @@ function setup() {
 function resetGame() {
   for (var n = 0; n < numGroundSprites; n++) {
     var gndSprite = groundSprites[n]
-    gndSprite.position.x = n * 50
+    gndSprite.position.x = n * 64//50
   }
   player.position.x = 100
-  player.position.y = height - 50 - player.height / 2
+  //player.position.y = height - 50 - player.height / 2
+  player.position.y = height - 64 - player.height / 2
   player.velocity.y = 0
 
   coinSprites.removeSprites()
@@ -178,11 +185,13 @@ function draw() {
       // collision
       if (groundSprites.overlap(player)) {
         player.velocity.y = 0
-        player.position.y = height - 50 - player.height / 2
+        player.position.y = height - 55 - player.height / 2
+        //player.position.y = height - 50 - player.height / 2
       }
 
       if (uiSprites.overlap(player)) {
-        player.position.y = height - 50 - player.height / 2
+        player.position.y = height - 64 - player.height / 2
+        //player.position.y = height - 50 - player.height / 2
       }
 
       // handle input
@@ -209,6 +218,19 @@ function draw() {
         firstGroundSprite.position.x = firstGroundSprite.position.x + numGroundSprites * firstGroundSprite.width
         groundSprites.add(firstGroundSprite)
       }
+
+      // spawn random foliage
+      if (random() > 0.98) {
+        var fol = createSprite(camera.position.x + width, height-82, 64, 64)
+        fol.addImage(foliageImg)
+        foliageSprites.add(fol)
+      }
+      var firstFoliage = foliageSprites[0]
+      if ((foliageSprites.length > 0) && (firstFoliage.position.x <= camera.position.x - (width/2 + firstFoliage.width / 2))) {
+        removeSprite(firstFoliage)
+      }
+
+      /*
 
       // spawn obstacles randomly
       if (random() > 0.95) {
@@ -263,9 +285,6 @@ function draw() {
       // collide
       powerupSprites.overlap(player, addPowerup)
 
-
-
-
       for (i = 0; i < systems.length; i++) {
         systems[i].run();
         systems[i].addParticle();
@@ -274,6 +293,7 @@ function draw() {
           systems.splice(i, 1);
         }
       }
+      */
 
       drawSprites()
 
