@@ -98,7 +98,7 @@ function setup() {
   foliageSprites   = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
-  for (let n = 0; n < numGroundSprites; n++) {
+  for (let n = -2; n < numGroundSprites; n++) {
     let gs = createSprite(
       n * 64,//50,
       height - 25,
@@ -206,12 +206,6 @@ function draw() {
         player.changeAnimation('powerup')
       }
 
-      fill(128)
-      ui.position.x = camera.position.x
-
-      player.position.x = player.position.x + 5
-      camera.position.x = player.position.x + width / 4
-
       var firstGroundSprite = groundSprites[0]
       if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
         groundSprites.remove(firstGroundSprite)
@@ -229,6 +223,13 @@ function draw() {
       if ((foliageSprites.length > 0) && (firstFoliage.position.x <= camera.position.x - (width/2 + firstFoliage.width / 2))) {
         removeSprite(firstFoliage)
       }
+
+      fill(128)
+      ui.position.x = camera.position.x
+
+      player.position.x = player.position.x + 5
+      camera.position.x = player.position.x + width / 4
+
 
       /*
 
