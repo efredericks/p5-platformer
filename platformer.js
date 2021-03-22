@@ -39,11 +39,11 @@ var houseImages
 var GRAVITY = 0.3
 var JUMP = -5
 
-var PLAYER_INDEX = 0
-var BULLET_INDEX = 1
-var COIN_INDEX   = 2
-var BUSH_INDEX   = 3
-var HOUSE_INDEX  = 4
+var PLAYER_INDEX = 10
+var BULLET_INDEX = 9
+var COIN_INDEX   = 8
+var BUSH_INDEX   = 7
+var HOUSE_INDEX  = 6
 var GROUND_INDEX = 5
 
 var player
@@ -270,6 +270,7 @@ function draw() {
         var fol = createSprite(camera.position.x + width, height-82, 64, 64)
         fol.addImage(foliageImg)
         fol.depth = BUSH_INDEX
+        fol.life  = 1000
         foliageSprites.add(fol)
       }
       var firstFoliage = foliageSprites[0]
@@ -282,6 +283,7 @@ function draw() {
         var house = createSprite(camera.position.x + width, height-82, 64, 64)
         house.addImage(houseImages[getRandomInteger(0,numHouseImages)]);
         house.depth = HOUSE_INDEX
+        house.life  = 1000
         houseSprites.add(house)
       }
       var firstHouse = houseSprites[0]
