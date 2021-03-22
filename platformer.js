@@ -12,6 +12,9 @@
 // https://www.kenney.nl/assets/simplified-platformer-pack
 // solarize --> brightness:60 --> duplicate/add noise/75% opacity on top
 
+function getRandomInteger(min, max) {
+  return Math.floor(random(min, max)) + min;
+}
 
 
 //based on https://workshops.hackclub.com/platformer/
@@ -22,16 +25,26 @@ var GROUND_SPRITE_HEIGHT = 64//50
 var numGroundSprites
 var obstacleSprites
 var coinSprites
+var houseSprites
+var powerupSprites
 
 var coinImg
 var groundImg
 var powerupImg
 var foliageImg
-
-var powerupSprites
+var numHouseImages
+var houseImg
+var houseImages
 
 var GRAVITY = 0.3
 var JUMP = -5
+
+var PLAYER_INDEX = 0
+var BULLET_INDEX = 1
+var COIN_INDEX   = 2
+var BUSH_INDEX   = 3
+var HOUSE_INDEX  = 4
+var GROUND_INDEX = 5
 
 var player
 var isGameOver
@@ -89,6 +102,17 @@ function setup() {
   systems = []
 
   let kenneyPath = "sprites/kenney/PNG/"
+
+  houseImages = [loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/house1.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/house2.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt1.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt2.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall1.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall2.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt1.png"),
+                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt2.png")];
+  numHouseImages = houseImages.length;
+
   coinImg        = loadImage("sprites/gvsu-logo-1.png")
   powerupImg     = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
   groundImg      = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
@@ -103,6 +127,7 @@ function setup() {
   powerupSprites   = new Group()
   uiSprites        = new Group()
   foliageSprites   = new Group()
+  houseSprites     = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   // -2 because it helps with the offset
@@ -114,6 +139,7 @@ function setup() {
       GROUND_SPRITE_HEIGHT
     )
     gs.addImage(groundImg)
+    gs.depth = GROUND_INDEX
     groundSprites.add(gs)
   }
 
@@ -133,6 +159,7 @@ function setup() {
 
   /// UI sprites
   ui = createSprite(0, 0, width, 40)
+  ui.depth = GROUND_INDEX
   uiSprites.add(ui)
 
   // setup scenes
@@ -150,6 +177,7 @@ function resetGame() {
       GROUND_SPRITE_WIDTH,
       GROUND_SPRITE_HEIGHT
     )
+    gs.depth = GROUND_INDEX
     gs.addImage(groundImg)
     groundSprites.add(gs)
   }
@@ -233,6 +261,7 @@ function draw() {
       if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
         groundSprites.remove(firstGroundSprite)
         firstGroundSprite.position.x = firstGroundSprite.position.x + numGroundSprites * firstGroundSprite.width
+        firstGroundSprite.depth = GROUND_INDEX
         groundSprites.add(firstGroundSprite)
       }
 
@@ -240,11 +269,24 @@ function draw() {
       if (random() > 0.98) {
         var fol = createSprite(camera.position.x + width, height-82, 64, 64)
         fol.addImage(foliageImg)
+        fol.depth = BUSH_INDEX
         foliageSprites.add(fol)
       }
       var firstFoliage = foliageSprites[0]
       if ((foliageSprites.length > 0) && (firstFoliage.position.x <= camera.position.x - (width/2 + firstFoliage.width / 2))) {
         removeSprite(firstFoliage)
+      }
+
+      // spawn random houses
+      if ((random() > 0.98) && (houseImages.length > 0)) {
+        var house = createSprite(camera.position.x + width, height-82, 64, 64)
+        house.addImage(houseImages[getRandomInteger(0,numHouseImages)]);
+        house.depth = HOUSE_INDEX
+        houseSprites.add(house)
+      }
+      var firstHouse = houseSprites[0]
+      if ((houseSprites.length > 0) && (firstHouse.position.x <= camera.position.x - (width/2 + firstHouse.width / 2))) {
+        removeSprite(firstHouse)
       }
 
       // UI
@@ -261,6 +303,7 @@ function draw() {
           var obstacle = createSprite(camera.position.x + width,
             random(0, height - 50 - 15),
             30, 30)
+          obstacle.depth = BULLET_INDEX
           obstacleSprites.add(obstacle)
         }
         // remove if necessary
