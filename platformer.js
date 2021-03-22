@@ -43,8 +43,13 @@ var lastKeyPressTimer
 var lastKeyPressDelay = 10 // don't auto-trigger pause on fresh start
 
 var scenes = []
+var locFrameCount
+
+// enemy 
+var currentEnemy
 
 let systems
+
 
 //// particle stuff
 ////
@@ -74,11 +79,13 @@ function addPowerup(c, p) {
 }
 
 function setup() {
-  isGameOver = false
-  isPaused = false
-  powerupTimer = 0
+  isGameOver        = false
+  isPaused          = false
+  locFrameCount     = 0
+  powerupTimer      = 0
   lastKeyPressTimer = 0
-  score = 0
+  score             = 0
+  currentEnemy      = 0  // change me to an enum
   systems = []
 
   let kenneyPath = "sprites/kenney/PNG/"
@@ -98,6 +105,7 @@ function setup() {
   foliageSprites   = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
+  // -2 because it helps with the offset
   for (let n = -2; n < numGroundSprites; n++) {
     let gs = createSprite(
       n * 64,//50,
@@ -134,10 +142,18 @@ function setup() {
 }
 
 function resetGame() {
-  for (var n = 0; n < numGroundSprites; n++) {
-    var gndSprite = groundSprites[n]
-    gndSprite.position.x = n * 64//50
+  groundSprites.removeSprites()
+  for (let n = -2; n < numGroundSprites; n++) {
+    let gs = createSprite(
+      n * 64,//50,
+      height - 25,
+      GROUND_SPRITE_WIDTH,
+      GROUND_SPRITE_HEIGHT
+    )
+    gs.addImage(groundImg)
+    groundSprites.add(gs)
   }
+
   player.position.x = 100
   //player.position.y = height - 50 - player.height / 2
   player.position.y = height - 64 - player.height / 2
@@ -149,9 +165,10 @@ function resetGame() {
 
   systems = []
 
-  isPaused = false
-  isGameOver = false
-  score = 0
+  isPaused          = false
+  isGameOver        = false
+  locFrameCount     = 0
+  score             = 0
   lastKeyPressTimer = lastKeyPressDelay
 }
 
@@ -230,11 +247,36 @@ function draw() {
         removeSprite(firstFoliage)
       }
 
+      // UI
       fill(128)
       ui.position.x = camera.position.x
 
+      // update player
       player.position.x = player.position.x + 5
       camera.position.x = player.position.x + width / 4
+
+      // shooting patterns
+      if (currentEnemy == 0) {
+        if (((frameCount % 10) == 0) && (obstacleSprites.length < 6)) {
+          var obstacle = createSprite(camera.position.x + width,
+            random(0, height - 50 - 15),
+            30, 30)
+          obstacleSprites.add(obstacle)
+        }
+        // remove if necessary
+        var firstObstacle = obstacleSprites[0]
+        if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
+          removeSprite(firstObstacle)
+        }
+      }
+
+      // end of stage
+      if (locFrameCount > 1000) {
+        console.log("WINNER")
+        resetGame()
+      }
+
+
 
 
       /*
@@ -253,8 +295,6 @@ function draw() {
         removeSprite(firstObstacle)
       }
 
-      // collide
-      obstacleSprites.overlap(player, collideEntity)
 
 
       //// coins
@@ -302,12 +342,17 @@ function draw() {
       }
       */
 
+      // collide
+      obstacleSprites.overlap(player, collideEntity)
+
       drawSprites()
 
       // score
-      score = score + 1
-      textAlign(CENTER)
-      text(score, camera.position.x, 10)
+      //score = score + 1
+      //textAlign(CENTER)
+      //text(score, camera.position.x, 10)
+
+      locFrameCount += 1
 
       // powerup
       if (powerupTimer > 0) {
