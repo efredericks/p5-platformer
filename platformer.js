@@ -114,6 +114,8 @@ function setup() {
   player = createSprite(100, height - 75, 96, 96)//128, 128)//25, 25)//50, 50)
   playerAnim = player.addAnimation('walking', kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
   playerAnim.frameDelay = 12
+  playerIdleAnim = player.addAnimation("idling", kenneyPath + "Characters/platformChar_idle1.png", kenneyPath + "Characters/platformChar_idle2.png")
+  playerIdleAnim.frameDelay = 24 
 
   powerupAnim = player.addAnimation('powerup', kenneyPath + "Characters/platformChar_walk1-power.png", kenneyPath + "Characters/platformChar_walk2-power.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
   powerupAnim.frameDelay = 12
@@ -182,18 +184,21 @@ function draw() {
     if (!isPaused) {
       player.velocity.y = player.velocity.y + GRAVITY
 
-      // collision
+      ///////////////COLLISIONS
+      // collide with ground
       if (groundSprites.overlap(player)) {
         player.velocity.y = 0
         player.position.y = height - 55 - player.height / 2
         //player.position.y = height - 50 - player.height / 2
       }
 
+      // collide with UI
       if (uiSprites.overlap(player)) {
         player.position.y = height - 64 - player.height / 2
         //player.position.y = height - 50 - player.height / 2
       }
 
+      ///////////////USER INPUT
       // handle input
       if (keyDown(UP_ARROW)) {
         player.velocity.y = JUMP
@@ -206,6 +211,7 @@ function draw() {
         player.changeAnimation('powerup')
       }
 
+      // ground drawing
       var firstGroundSprite = groundSprites[0]
       if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
         groundSprites.remove(firstGroundSprite)
@@ -310,8 +316,10 @@ function draw() {
           player.changeAnimation('walking')
       }
     } else {
-      fill('rgba(0,255,0,0.25)')
-      rect(0,25,width,height-25)
+      drawSprites()
+
+      fill('rgba(0,255,0,0.1)')
+      rect(camera.position.x - (width/2),0,width,height)
       
     //  console.log("paused")
     }
@@ -322,6 +330,11 @@ function keyReleased() {
   if ((keyCode == 80) && (!isGameOver) && (lastKeyPressTimer == 0)) { // pause
     isPaused = !isPaused
     lastKeyPressTimer = lastKeyPressDelay
+    if (isPaused) {
+      player.changeAnimation("idling")
+      ui.position.x += 4
+    } else
+      player.changeAnimation("walking")
   }
 }
 
