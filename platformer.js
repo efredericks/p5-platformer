@@ -16,6 +16,10 @@ function getRandomInteger(min, max) {
   return Math.floor(random(min, max)) + min;
 }
 
+function plusOrMinus() {
+  return Math.random() < 0.5 ? -1 : 1;
+}
+
 
 //based on https://workshops.hackclub.com/platformer/
 var uiSprites
@@ -32,6 +36,7 @@ var coinImg
 var groundImg
 var powerupImg
 var foliageImg
+var obstacleImg
 var numHouseImages
 var houseImg
 var houseImages
@@ -41,9 +46,9 @@ var JUMP = -5
 
 var PLAYER_INDEX = 10
 var BULLET_INDEX = 9
-var COIN_INDEX   = 8
-var BUSH_INDEX   = 7
-var HOUSE_INDEX  = 6
+var COIN_INDEX = 8
+var BUSH_INDEX = 7
+var HOUSE_INDEX = 6
 var GROUND_INDEX = 5
 
 var player
@@ -92,42 +97,43 @@ function addPowerup(c, p) {
 }
 
 function setup() {
-  isGameOver        = false
-  isPaused          = false
-  locFrameCount     = 0
-  powerupTimer      = 0
+  isGameOver = false
+  isPaused = false
+  locFrameCount = 0
+  powerupTimer = 0
   lastKeyPressTimer = 0
-  score             = 0
-  currentEnemy      = 0  // change me to an enum
+  score = 0
+  currentEnemy = 0  // change me to an enum
   systems = []
 
   let kenneyPath = "sprites/kenney/PNG/"
 
   houseImages = [loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/house1.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/house2.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt1.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt2.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall1.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall2.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt1.png"),
-                 loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt2.png")];
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/house2.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt1.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseAlt2.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall1.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmall2.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt1.png"),
+  loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt2.png")];
   numHouseImages = houseImages.length;
 
-  coinImg        = loadImage("sprites/gvsu-logo-1.png")
-  powerupImg     = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
-  groundImg      = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
-  foliageImg     = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
+  coinImg = loadImage("sprites/gvsu-logo-1.png")
+  powerupImg = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
+  groundImg = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
+  foliageImg = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
+  obstacleImg = loadImage(kenneyPath + "Tiles/platformPack_tile024-small.png")
 
   createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites    = new Group()
-  obstacleSprites  = new Group()
-  coinSprites      = new Group()
-  powerupSprites   = new Group()
-  uiSprites        = new Group()
-  foliageSprites   = new Group()
-  houseSprites     = new Group()
+  groundSprites = new Group()
+  obstacleSprites = new Group()
+  coinSprites = new Group()
+  powerupSprites = new Group()
+  uiSprites = new Group()
+  foliageSprites = new Group()
+  houseSprites = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
   // -2 because it helps with the offset
@@ -149,7 +155,7 @@ function setup() {
   playerAnim = player.addAnimation('walking', kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
   playerAnim.frameDelay = 12
   playerIdleAnim = player.addAnimation("idling", kenneyPath + "Characters/platformChar_idle1.png", kenneyPath + "Characters/platformChar_idle2.png")
-  playerIdleAnim.frameDelay = 24 
+  playerIdleAnim.frameDelay = 24
 
   powerupAnim = player.addAnimation('powerup', kenneyPath + "Characters/platformChar_walk1-power.png", kenneyPath + "Characters/platformChar_walk2-power.png")//'sprites/walk/1.png', 'sprites/walk/20.png')
   powerupAnim.frameDelay = 12
@@ -196,10 +202,10 @@ function resetGame() {
 
   systems = []
 
-  isPaused          = false
-  isGameOver        = false
-  locFrameCount     = 0
-  score             = 0
+  isPaused = false
+  isGameOver = false
+  locFrameCount = 0
+  score = 0
   lastKeyPressTimer = lastKeyPressDelay
 }
 
@@ -270,14 +276,14 @@ function draw() {
 
       // spawn random foliage
       if (random() > 0.98) {
-        var fol = createSprite(camera.position.x + width, height-82, 64, 64)
+        var fol = createSprite(camera.position.x + width, height - 82, 64, 64)
         fol.addImage(foliageImg)
         fol.depth = BUSH_INDEX
-        fol.life  = 1000
+        fol.life = 1000
         foliageSprites.add(fol)
       }
       var firstFoliage = foliageSprites[0]
-      if ((foliageSprites.length > 0) && (firstFoliage.position.x <= camera.position.x - (width/2 + firstFoliage.width / 2))) {
+      if ((foliageSprites.length > 0) && (firstFoliage.position.x <= camera.position.x - (width / 2 + firstFoliage.width / 2))) {
         removeSprite(firstFoliage)
       }
 
@@ -306,17 +312,32 @@ function draw() {
 
       // shooting patterns
       if (currentEnemy == 0) {
-        if (((frameCount % 10) == 0) && (obstacleSprites.length < 6)) {
-          var obstacle = createSprite(camera.position.x + width,
-            random(0, height - 50 - 15),
-            30, 30)
-          obstacle.depth = BULLET_INDEX
-          obstacleSprites.add(obstacle)
-        }
-        // remove if necessary
-        var firstObstacle = obstacleSprites[0]
-        if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
-          removeSprite(firstObstacle)
+        if (locFrameCount < 1000) { // normal things to avoid
+          if (((frameCount % 10) == 0) && (obstacleSprites.length < 6)) {
+            var obstacle = createSprite(camera.position.x + width,
+              random(0, height - 50 - 15),
+              30, 30)
+            obstacle.addImage(obstacleImg)
+            obstacle.depth = BULLET_INDEX
+            obstacle.rotationSpeed = getRandomInteger(10,30)
+            obstacleSprites.add(obstacle)
+          }
+          // remove if necessary
+          var firstObstacle = obstacleSprites[0]
+          if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
+            removeSprite(firstObstacle)
+          }
+
+          for (let i = 0; i < obstacleSprites.length; i++) {
+            obstacleSprites[i].rotation += 1
+            if (random() > 0.75)
+              obstacleSprites[i].position.y += plusOrMinus() * 1
+          }
+
+        } else { // boss time!
+          textAlign(CENTER)
+          fill(0)
+          text("BOSS TIME", camera.position.x, 100)
         }
       }
 
@@ -416,9 +437,9 @@ function draw() {
       drawSprites()
 
       fill('rgba(0,255,0,0.1)')
-      rect(camera.position.x - (width/2),0,width,height)
-      
-    //  console.log("paused")
+      rect(camera.position.x - (width / 2), 0, width, height)
+
+      //  console.log("paused")
     }
   }
 }
