@@ -190,6 +190,9 @@ function resetGame() {
   coinSprites.removeSprites()
   obstacleSprites.removeSprites()
   powerupSprites.removeSprites()
+  uiSprites.removeSprites()
+  foliageSprites.removeSprites()
+  houseSprites.removeSprites()
 
   systems = []
 
@@ -279,6 +282,7 @@ function draw() {
       }
 
       // spawn random houses
+      /*
       if ((random() > 0.98) && (houseImages.length > 0)) {
         var house = createSprite(camera.position.x + width, height-82, 64, 64)
         house.addImage(houseImages[getRandomInteger(0,numHouseImages)]);
@@ -290,6 +294,7 @@ function draw() {
       if ((houseSprites.length > 0) && (firstHouse.position.x <= camera.position.x - (width/2 + firstHouse.width / 2))) {
         removeSprite(firstHouse)
       }
+      */
 
       // UI
       fill(128)
@@ -316,10 +321,12 @@ function draw() {
       }
 
       // end of stage
+      /*
       if (locFrameCount > 1000) {
         console.log("WINNER")
         resetGame()
       }
+      */
 
 
 
