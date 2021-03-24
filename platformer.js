@@ -52,6 +52,7 @@ var houseImg
 var houseImages
 var uiBossImg
 
+var bossFrameCount = 200
 var GRAVITY = 0.3
 var JUMP = -5
 
@@ -64,6 +65,7 @@ var GROUND_INDEX = 5
 
 var player
 var miniPlayer
+var updateMiniPlayer = true
 var isGameOver
 var isPaused
 var powerupTimer
@@ -90,7 +92,6 @@ function collideEntity(e, p) {
     score += 200
     e.remove()
   } else {
-    console.log(e.fart)
     isGameOver = true
     lastKeyPressTimer = lastKeyPressDelay * 4
   }
@@ -111,14 +112,14 @@ function addPowerup(c, p) {
 }
 
 function setup() {
-  isGameOver = false
-  isPaused = false
-  locFrameCount = 0
-  powerupTimer = 0
+  isGameOver        = false
+  isPaused          = false
+  locFrameCount     = 0
+  powerupTimer      = 0
   lastKeyPressTimer = 0
-  score = 0
-  currentEnemy = 0  // change me to an enum
-  systems = []
+  score             = 0
+  currentEnemy      = 0  // change me to an enum
+  systems           = []
 
   let kenneyPath = "sprites/kenney/PNG/"
 
@@ -225,20 +226,24 @@ function resetGame() {
   player.position.y = height - 64 - player.height / 2
   player.velocity.y = 0
 
+
   coinSprites.removeSprites()
   obstacleSprites.removeSprites()
   powerupSprites.removeSprites()
-  //uiSprites.removeSprites()
   foliageSprites.removeSprites()
   houseSprites.removeSprites()
 
   systems = []
 
-  isPaused = false
-  isGameOver = false
+  isPaused      = false
+  isGameOver    = false
   locFrameCount = 0
-  score = 0
+  score         = 0
   lastKeyPressTimer = lastKeyPressDelay
+
+  miniPlayer.position.x = camera.position.x - width/2 + 16
+  bossUI.position.x     = camera.position.x
+  updateMiniPlayer      = true
 }
 
 function mouseClicked() {
@@ -337,9 +342,21 @@ function draw() {
       */
 
       // UI
+      //miniPlayer.position.x = camera.position.x - width/2 + 16
+
+      if (miniPlayer.position.x >= (bossUI.position.x - 16))
+        updateMiniPlayer = false
+
+      if (updateMiniPlayer) {
+        miniPlayer.position.x = (camera.position.x - width/2 + 32) + (-1 * 32/2) + (width * locFrameCount)/(bossFrameCount*2)
+      } else {
+        miniPlayer.position.x = bossUI.position.x - 16
+      }
       ui.position.x         = camera.position.x
       bossUI.position.x     = camera.position.x
-      miniPlayer.position.x = camera.position.x - width/2 + 16
+
+
+
       // calculate new X of miniplayer
 //function normalize(num, fromMin, fromMax, toMin, toMax)
 
@@ -362,7 +379,7 @@ function draw() {
 
       // shooting patterns
       if (currentEnemy == 0) {
-        if (locFrameCount < 1000) { // normal things to avoid
+        if (locFrameCount < bossFrameCount) { // normal things to avoid
           if (((frameCount % 10) == 0) && (obstacleSprites.length < 6)) {
             var obstacle = createSprite(camera.position.x + width,
               random(0, height - 50 - 15),
