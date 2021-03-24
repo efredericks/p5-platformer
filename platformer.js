@@ -52,7 +52,7 @@ var houseImg
 var houseImages
 var uiBossImg
 
-var bossFrameCount = 200
+var bossFrameCount = 500
 var GRAVITY = 0.3
 var JUMP = -5
 
@@ -136,6 +136,7 @@ function setup() {
   coinImg     = loadImage("sprites/gvsu-logo-1.png")
   powerupImg  = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
   groundImg   = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
+  bossGndImg  = loadImage(kenneyPath + "Tiles/platformPack_tile013.png")
   foliageImg  = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
   obstacleImg = loadImage(kenneyPath + "Tiles/platformPack_tile024-small.png")
 
@@ -310,6 +311,8 @@ function draw() {
         groundSprites.remove(firstGroundSprite)
         firstGroundSprite.position.x = firstGroundSprite.position.x + numGroundSprites * firstGroundSprite.width
         firstGroundSprite.depth = GROUND_INDEX
+        if (locFrameCount >= bossFrameCount)
+          firstGroundSprite.addImage(bossGndImg)
         groundSprites.add(firstGroundSprite)
       }
 
@@ -354,6 +357,10 @@ function draw() {
       }
       ui.position.x         = camera.position.x
       bossUI.position.x     = camera.position.x
+
+      if (locFrameCount > bossFrameCount*2) {
+        isGameOver = true
+      }
 
 
 
