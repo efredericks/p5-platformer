@@ -12,12 +12,21 @@
 // https://www.kenney.nl/assets/simplified-platformer-pack
 // solarize --> brightness:60 --> duplicate/add noise/75% opacity on top
 
+// skull --> https://opengameart.org/content/pixel-skulls
+// scofanogd (CC0)
+
 function getRandomInteger(min, max) {
   return Math.floor(random(min, max)) + min;
 }
 
 function plusOrMinus() {
   return Math.random() < 0.5 ? -1 : 1;
+}
+
+// https://www.howtobuildsoftware.com/index.php/how-do/Krd/normalization-normalize-normalizing-number-between-2-ranges
+function normalize(num, fromMin, fromMax, toMin, toMax)
+{
+  return toMin + (num - fromMin)/(fromMax - fromMin) * (toMax - toMin)
 }
 
 
@@ -31,6 +40,7 @@ var obstacleSprites
 var coinSprites
 var houseSprites
 var powerupSprites
+var uiBossSprites
 
 var coinImg
 var groundImg
@@ -40,6 +50,7 @@ var obstacleImg
 var numHouseImages
 var houseImg
 var houseImages
+var uiBossImg
 
 var GRAVITY = 0.3
 var JUMP = -5
@@ -52,10 +63,12 @@ var HOUSE_INDEX = 6
 var GROUND_INDEX = 5
 
 var player
+var miniPlayer
 var isGameOver
 var isPaused
 var powerupTimer
 var score
+var bossUI
 
 var lastKeyPressTimer
 var lastKeyPressDelay = 10 // don't auto-trigger pause on fresh start
@@ -77,6 +90,7 @@ function collideEntity(e, p) {
     score += 200
     e.remove()
   } else {
+    console.log(e.fart)
     isGameOver = true
     lastKeyPressTimer = lastKeyPressDelay * 4
   }
@@ -118,24 +132,26 @@ function setup() {
   loadImage("sprites/kenney/background-elements-redux-fix/PNG/Default/houseSmallAlt2.png")];
   numHouseImages = houseImages.length;
 
-  coinImg = loadImage("sprites/gvsu-logo-1.png")
-  powerupImg = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
-  groundImg = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
-  foliageImg = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
+  coinImg     = loadImage("sprites/gvsu-logo-1.png")
+  powerupImg  = loadImage(kenneyPath + "Tiles/platformPack_tile023.png")
+  groundImg   = loadImage(kenneyPath + "Tiles/platformPack_tile001.png")
+  foliageImg  = loadImage(kenneyPath + "Tiles/platformPack_tile045.png")
   obstacleImg = loadImage(kenneyPath + "Tiles/platformPack_tile024-small.png")
 
   createCanvas(800, 600)//400, 300)
   background(150, 200, 250)
 
-  groundSprites = new Group()
-  obstacleSprites = new Group()
-  coinSprites = new Group()
-  powerupSprites = new Group()
-  uiSprites = new Group()
-  foliageSprites = new Group()
-  houseSprites = new Group()
+  groundSprites    = new Group()
+  obstacleSprites  = new Group()
+  coinSprites      = new Group()
+  powerupSprites   = new Group()
+  uiSprites        = new Group()
+  foliageSprites   = new Group()
+  houseSprites     = new Group()
   numGroundSprites = width / GROUND_SPRITE_WIDTH + 1
 
+
+  /*
   // -2 because it helps with the offset
   for (let n = -2; n < numGroundSprites; n++) {
     let gs = createSprite(
@@ -147,7 +163,7 @@ function setup() {
     gs.addImage(groundImg)
     gs.depth = GROUND_INDEX
     groundSprites.add(gs)
-  }
+  }*/
 
   /// Player sprites
   //player = createSprite(100, height-75, 25, 25)//50, 50)
@@ -164,9 +180,25 @@ function setup() {
   player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
 
   /// UI sprites
-  ui = createSprite(0, 0, width, 40)
-  ui.depth = GROUND_INDEX
+  ui            = createSprite(0, 0, width, 64)
+  ui.shapeColor = color(0, 86, 152)
+  ui.depth      = GROUND_INDEX
   uiSprites.add(ui)
+
+  // Mini player sprites
+  miniPlayer                = createSprite(0, 12, 96, 96)
+  miniPlayer.scale          = 0.333
+  miniPlayerAnim            = miniPlayer.addAnimation("idling", kenneyPath + "Characters/platformChar_walk1.png", kenneyPath + "Characters/platformChar_walk2.png")
+  miniPlayer.depth          = BULLET_INDEX
+  miniPlayerAnim.frameDelay = 24
+
+  // Boss head sprites 
+  bossUI                = createSprite(width/2, 16, 32, 32)
+  bossUIAnim            = bossUI.addAnimation("snapping", "sprites/skull1.png", "sprites/skull2.png")
+  bossUI.depth          = BULLET_INDEX
+  bossUIAnim.frameDelay = 24
+
+  resetGame()
 
   // setup scenes
   // main menu
@@ -196,7 +228,7 @@ function resetGame() {
   coinSprites.removeSprites()
   obstacleSprites.removeSprites()
   powerupSprites.removeSprites()
-  uiSprites.removeSprites()
+  //uiSprites.removeSprites()
   foliageSprites.removeSprites()
   houseSprites.removeSprites()
 
@@ -249,6 +281,7 @@ function draw() {
       // collide with UI
       if (uiSprites.overlap(player)) {
         player.position.y = height - 64 - player.height / 2
+        player.velocity   = 0
         //player.position.y = height - 50 - player.height / 2
       }
 
@@ -265,6 +298,8 @@ function draw() {
         player.changeAnimation('powerup')
       }
 
+
+      ///////////////SPRITES
       // ground drawing
       var firstGroundSprite = groundSprites[0]
       if (firstGroundSprite.position.x <= camera.position.x - (width / 2 + firstGroundSprite.width / 2)) {
@@ -303,8 +338,24 @@ function draw() {
       */
 
       // UI
-      fill(128)
-      ui.position.x = camera.position.x
+      ui.position.x         = camera.position.x
+      bossUI.position.x     = camera.position.x
+      miniPlayer.position.x = camera.position.x - width/2 + 16
+      // calculate new X of miniplayer
+//function normalize(num, fromMin, fromMax, toMin, toMax)
+
+/*
+      if (miniPlayer.position.x <= (camera.position.x-16)) {
+        miniPlayer.position.x = (camera.position.x - width/2 + 16) + (locFrameCount/2)
+      } else {
+        miniPlayer.position.x = camera.position.x - 15
+      }
+      */
+
+      // UI - player's distance to boss
+      /// draw mini player (calculate distance to boss based on expected frameCount)
+      /// draw boss head (set in middle)
+
 
       // update player
       player.position.x = player.position.x + 5
@@ -329,9 +380,12 @@ function draw() {
           }
 
           for (let i = 0; i < obstacleSprites.length; i++) {
-            obstacleSprites[i].rotation += 1
-            if (random() > 0.75)
-              obstacleSprites[i].position.y += plusOrMinus() * 1
+//            obstacleSprites[i].rotation += 1
+            if (random() > 0.75) {
+              let dir = plusOrMinus()
+              obstacleSprites[i].position.y += dir * 1
+              obstacleSprites[i].rotationSpeed *= dir
+            }
           }
 
         } else { // boss time!
@@ -425,6 +479,8 @@ function draw() {
       //textAlign(CENTER)
       //text(score, camera.position.x, 10)
 
+      /////////////////METRIC UPDATES
+
       locFrameCount += 1
 
       // powerup
@@ -433,7 +489,7 @@ function draw() {
         if (powerupTimer == 0)
           player.changeAnimation('walking')
       }
-    } else {
+    } else { // paused
       drawSprites()
 
       fill('rgba(0,255,0,0.1)')
