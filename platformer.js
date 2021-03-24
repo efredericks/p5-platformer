@@ -281,7 +281,6 @@ function draw() {
       // collide with UI
       if (uiSprites.overlap(player)) {
         player.position.y = height - 64 - player.height / 2
-        player.velocity   = 0
         //player.position.y = height - 50 - player.height / 2
       }
 
