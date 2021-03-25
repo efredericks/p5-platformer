@@ -35,6 +35,7 @@ var uiSprites
 var groundSprites
 var GROUND_SPRITE_WIDTH = 64//50
 var GROUND_SPRITE_HEIGHT = 64//50
+var UI_HEIGHT = 64
 var numGroundSprites
 var obstacleSprites
 var coinSprites
@@ -182,7 +183,7 @@ function setup() {
   player.setCollider('rectangle', 1, 15, 78, 68)//8, 24, 78, 64)
 
   /// UI sprites
-  ui            = createSprite(0, 0, width, 64)
+  ui            = createSprite(0, 0, width, UI_HEIGHT)
   ui.shapeColor = color(0, 86, 152)
   ui.depth      = GROUND_INDEX
   uiSprites.add(ui)
@@ -385,8 +386,21 @@ function draw() {
       camera.position.x = player.position.x + width / 4
 
       // shooting patterns
-      if (currentEnemy == 0) {
+      if (currentEnemy == 0) { // level 1
         if (locFrameCount < bossFrameCount) { // normal things to avoid
+          if (((locFrameCount % 20) == 0) && (obstacleSprites.length < 6)) {
+            var obstacle = createSprite(camera.position.x + width,
+              random(UI_HEIGHT+4, height/2),//height - 64 - 15),
+              30, 30)
+            obstacle.addImage(obstacleImg)
+            obstacle.depth = BULLET_INDEX
+            obstacle.pattern = "sine"
+            obstacle.rotationSpeed = getRandomInteger(10,30)
+            obstacleSprites.add(obstacle)
+          }
+
+          // spawn
+          /*
           if (((frameCount % 10) == 0) && (obstacleSprites.length < 6)) {
             var obstacle = createSprite(camera.position.x + width,
               random(0, height - 50 - 15),
@@ -396,20 +410,32 @@ function draw() {
             obstacle.rotationSpeed = getRandomInteger(10,30)
             obstacleSprites.add(obstacle)
           }
+          */
           // remove if necessary
           var firstObstacle = obstacleSprites[0]
           if ((obstacleSprites.length > 0) && (firstObstacle.position.x <= camera.position.x - (width / 2 + firstObstacle.width / 2))) {
             removeSprite(firstObstacle)
           }
 
+          // random rotation and bobble
+          /*
+          let beta = 90 + Math.PI / 2.0
           for (let i = 0; i < obstacleSprites.length; i++) {
+            // https://gamedev.stackexchange.com/questions/69694/how-to-make-bullets-follow-a-rotating-sinewave-pattern
+            c_dist = 50 * Math.sin(locFrameCount * 0.15)
+            obstacleSprites[i].position.y = obstacleSprites[i].position.y + Math.sin(beta) * c_dist
+            //c_d = 100 * Math.sin(locFrameCount * 0.25)
+            //obstacleSprites[i].position.y = c_d + sin(Math.PI / 2.0) //* locFrameCount
+ //           obstacleSprites[i].position.x = Math.sin(locFrameCount)
 //            obstacleSprites[i].rotation += 1
-            if (random() > 0.75) {
-              let dir = plusOrMinus()
-              obstacleSprites[i].position.y += dir * 1
-              obstacleSprites[i].rotationSpeed *= dir
-            }
+            //if (random() > 0.75) {
+              //let dir = plusOrMinus()
+              //obstacleSprites[i].position.y += dir * 1
+              //obstacleSprites[i].rotationSpeed *= dir
+            //}
           }
+          */
+
 
         } else { // boss time!
           textAlign(CENTER)
